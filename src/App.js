@@ -22,27 +22,6 @@ class App extends Component {
     }
   }
 
-  onGenerateData = () => {
-    var tasks = [
-      {
-        id: this.generateId(),
-        name: 'Hob lap trinh',
-        status: true
-      },
-      {
-        id: this.generateId(),
-        name: 'Di choi',
-        status: false
-      }
-    ];
-
-    this.setState({
-      tasks: tasks
-    });
-
-    localStorage.setItem('tasks', JSON.stringify(tasks));
-  }
-
   s4() {
     return Math.floor((1 + Math.random()) * 0x10000).toString(16).substring(1);
   }
@@ -64,9 +43,51 @@ class App extends Component {
     });
   }
 
+  onSubmit = (data) => {
+    var {tasks} = this.state;
+    data.id = this.generateId();
+    tasks.push(data);
+
+    this.setState({
+      tasks: tasks
+    });
+
+    localStorage.setItem('tasks', JSON.stringify(tasks));
+  }
+
+  onUpdateStatus = (id) => {
+    var index = this.findIndex(id);
+    var {tasks} = this.state;
+
+    if (index !== -1) {
+      tasks[index].status = !tasks[index].status;
+    }
+
+    this.setState({
+      tasks: tasks
+    });
+
+    localStorage.setItem('tasks', JSON.stringify(tasks));
+  }
+
+  findIndex(id) {
+    var {tasks} = this.state;
+    var result = -1;
+
+    tasks.forEach((task, index) => {
+      if (task.id === id) {
+        result = index;
+      }
+    });
+
+    return result;
+  }
+
   render() {
     var {tasks, isDisplayForm} = this.state
-    var elmTaskForm = isDisplayForm ? <TaskForm onCloseForm={this.onCloseForm}/> : '';
+    var elmTaskForm = isDisplayForm ?
+      <TaskForm
+        onCloseForm={this.onCloseForm} onSubmit={this.onSubmit}/> : '';
 
     return (
       <div className="container">
@@ -86,16 +107,13 @@ class App extends Component {
             >
               <span className="fa fa-plus mr-5"></span>Them cong viec
             </button> &nbsp;
-            <button
-              type="button"
-              className="btn btn-danger"
-              onClick={this.onGenerateData}>Generate Date
-            </button>
             <Control />
             <br/>
             <div className="row mt-15">
               <div className="col-xs-12 col-sm-12 col-md-12 col-lg-12">
-                <TaskList tasks={tasks} />
+                <TaskList
+                  tasks={tasks}
+                  onUpdateStatus={this.onUpdateStatus}/>
               </div>
             </div>
           </div>
