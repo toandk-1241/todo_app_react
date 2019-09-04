@@ -3,37 +3,22 @@ import './App.css';
 import TaskForm from './components/TaskForm';
 import Control from './components/Control';
 import TaskList from './components/TaskList';
+import {findIndex} from 'lodash'
 
 class App extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      tasks: [],
       isDisplayForm: false,
       taskEditing: null,
       filter: {
         name: '',
         status: -1
-      }
+      },
+      keyword: '',
+      sortBy: 'name',
+      sortValue: 1
     }
-  }
-
-  componentWillMount() {
-    if(localStorage && localStorage.getItem('tasks')) {
-      var tasks = JSON.parse(localStorage.getItem('tasks'));
-      this.setState({
-        tasks: tasks
-      })
-    }
-  }
-
-  s4() {
-    return Math.floor((1 + Math.random()) * 0x10000).toString(16).substring(1);
-  }
-
-  generateId() {
-    return this.s4() + this.s4() + '-' + this.s4() + '-' + this.s4() + '-' + this.s4()
-      + '-' + this.s4() + this.s4() + this.s4();
   }
 
   onToggeForm = () => {
@@ -77,20 +62,23 @@ class App extends Component {
     this.onCloseForm();
   }
 
-  onUpdateStatus = (id) => {
-    var index = this.findIndex(id);
-    var {tasks} = this.state;
+  // onUpdateStatus = (id) => {
+  //   // var index = this.findIndex(id);
+  //   var {tasks} = this.state;
+  //   var index = findIndex(tasks,(task) => {
+  //     return task.id === id;
+  //   })
 
-    if (index !== -1) {
-      tasks[index].status = !tasks[index].status;
-    }
+  //   if (index !== -1) {
+  //     tasks[index].status = !tasks[index].status;
+  //   }
 
-    this.setState({
-      tasks: tasks
-    });
+  //   this.setState({
+  //     tasks: tasks
+  //   });
 
-    localStorage.setItem('tasks', JSON.stringify(tasks));
-  }
+  //   localStorage.setItem('tasks', JSON.stringify(tasks));
+  // }
 
   findIndex(id) {
     var {tasks} = this.state;
@@ -149,24 +137,57 @@ class App extends Component {
     })
   }
 
+  onSearch = (keyword) => {
+    this.setState({
+      keyword: keyword
+    });
+  }
+
+  onSort = (sort_by, sort_value) => {
+    this.setState({
+      sortBy: sort_by,
+      sortValue: sort_value
+    })
+  }
+
   render() {
-    var {tasks, isDisplayForm, taskEditing, filter} = this.state;
+    var {isDisplayForm, taskEditing, filter, keyword, sortBy, sortValue} = this.state;
 
-    if(filter) {
-      if(filter.name) {
-        tasks = tasks.filter((task) => {
-          return task.name.toLowerCase().indexOf(filter.name) !== -1;
-        });
-      }
+    // if(filter) {
+      // if(filter.name) {
+      //   tasks = tasks.filter((task) => {
+      //     return task.name.toLowerCase().indexOf(filter.name) !== -1;
+      //   });
+      // }
 
-      tasks = tasks.filter((task) => {
-        if(filter.status === -1) {
-          return tasks;
-        } else {
-          return task.status === (filter.status === 1 ? true : false);
-        }
-      })
-    }
+    //   tasks = tasks.filter((task) => {
+    //     if(filter.status === -1) {
+    //       return tasks;
+    //     } else {
+    //       return task.status === (filter.status === 1 ? true : false);
+    //     }
+    //   })
+    // }
+
+    // if(keyword) {
+    //   tasks = tasks.filter((task) => {
+    //       return task.name.toLowerCase().indexOf(keyword) !== -1;
+    //     });
+    // }
+
+    // if(sortBy === 'name') {
+    //   tasks.sort((a, b) => {
+    //     if(a.name > b.name) return sortValue;
+    //     else if (a.name < b.name) return -sortValue;
+    //     else return 0;
+    //   });
+    // } else {
+    //   tasks.sort((a, b) => {
+    //     if(a.status > b.status) return sortValue;
+    //     else if (a.status < b.status) return -sortValue;
+    //     else return 0;
+    //   });
+    // }
 
     var elmTaskForm = isDisplayForm ?
       <TaskForm
@@ -192,13 +213,15 @@ class App extends Component {
             >
               <span className="fa fa-plus mr-5"></span>Them cong viec
             </button> &nbsp;
-            <Control />
+            <Control
+              onSearch={this.onSearch}
+              onSort={this.onSort}
+              sortBy={sortBy}
+              sortValue= {sortValue} />
             <br/>
             <div className="row mt-15">
               <div className="col-xs-12 col-sm-12 col-md-12 col-lg-12">
                 <TaskList
-                  tasks={tasks}
-                  onUpdateStatus={this.onUpdateStatus}
                   onDelete={this.onDelete}
                   onUpdate={this.onUpdate}
                   onFilter={this.onFilter} />
